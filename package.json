@@ -1,0 +1,32 @@
+{
+  "name": "@nasimhuq/abort-promise-stream",
+  "version": "0.1.0",
+  "description": "abort stream of promises on any response",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "esbuild ./src/index.js --bundle --minify --target=es6 --outfile=des/abort-promise-stream.js",
+    "test": "node tests/abortPromiseStream.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nasimhuq/abort-promise-stream.git"
+  },
+  "keywords": [
+    "promise",
+    "stream",
+    "abort",
+    "queue",
+    "terminate",
+    "fetch"
+  ],
+  "author": "Nasim Huq",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nasimhuq/abort-promise-stream/issues"
+  },
+  "homepage": "https://github.com/nasimhuq/abort-promise-stream#readme",
+  "devDependencies": {
+    "esbuild": "^0.24.2"
+  }
+}
