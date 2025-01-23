@@ -1,7 +1,7 @@
 # abort-promise-stream
 **stream of promises. All promises are executed concurrently and all promise responses are emitted in the order each was entered. User can abort/terminate the stream on any response.**
 
-Stream emits an object `{response, config}` where response is `[error, data]` for `DATA` event
+Stream emits an object `{response, config}` where `response` contains `[error, data]` for `DATA` event
   * On successful `response` array contains `data`, which will contain the response body.
   * On error `response` array contains `error`, which will contain the error message.
 
