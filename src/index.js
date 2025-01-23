@@ -1,14 +1,14 @@
-import { observableArray } from './observableArray.js'
+import {observableArray} from './observableArray.js'
 export function createPromiseStream() {
   const list = observableArray([])
   async function* generator() {
     while (true) {
       await waitForListToFillUp()
       list.unsubscribeAll() // no need to observe list at this time
-      if (_terminated) return { done: true }
-      const { promise, allOptions } = list.value.shift()
+      if (_terminated) return {done: true}
+      const {promise, allOptions} = list.value.shift()
       const response = await promise
-      yield { response, allOptions }
+      yield {response, allOptions}
     }
   }
 
@@ -26,7 +26,7 @@ export function createPromiseStream() {
   const waitForListToFillUp = async () => {
     return new Promise((resolve) => {
       if (isTerminated()) {
-        list.value.forEach(({ allOptions }) => {
+        list.value.forEach(({allOptions}) => {
           allOptions.config._controller.abort()
         })
         resolve(true)
@@ -44,7 +44,6 @@ export function createPromiseStream() {
 
   const STREAM_END_EVENT = 'END'
   const STREAM_DATA_EVENT = 'DATA'
-  const STREAM_ERROR_EVENT = 'ERROR'
   let _terminateOnError = false
 
   return {
@@ -52,7 +51,6 @@ export function createPromiseStream() {
       return {
         STREAM_END_EVENT: STREAM_END_EVENT,
         STREAM_DATA_EVENT: STREAM_DATA_EVENT,
-        STREAM_ERROR_EVENT: STREAM_ERROR_EVENT,
       }
     },
     terminateOnError() {
@@ -67,17 +65,17 @@ export function createPromiseStream() {
       if (isTerminated()) {
         throw new Error('Error: Cannot add item to terminated queue!')
       }
-      const { url, config } = item
+      const {url, config} = item
       const controller = new AbortController()
       const signal = controller.signal
       const allOptions = {
-        config: { ...config, _controller: controller },
-        options: { signal },
+        config: {...config, _controller: controller},
+        options: {signal},
       }
       const promise = api(url, allOptions)
         .then((data) => Promise.resolve([null, data]))
         .catch((error) => Promise.resolve([error, null]))
-      list.value.push({ promise, allOptions })
+      list.value.push({promise, allOptions})
     },
     async start(maxIterationCount = 0) {
       let iterationCount = 0
@@ -98,10 +96,13 @@ export function createPromiseStream() {
     },
     async next() {
       const result = await iterator.next()
-      const { allOptions, response } = result.value || {}
+      const {allOptions, response} = result.value || {}
       if (response) {
-        this.emit(allOptions.config.key, response)
-        this.emit(STREAM_DATA_EVENT, response)
+        const {config} = allOptions
+        // emit an object where fetch/promise result in response
+        // and original config passed as the api param
+        config?.key && this.emit(config.key, {response, config})
+        this.emit(STREAM_DATA_EVENT, {response, config})
         const [error] = response
         if (_terminateOnError && error) {
           this.terminate()

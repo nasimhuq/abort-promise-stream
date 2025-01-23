@@ -1,17 +1,18 @@
 import CreatePromiseStream from '../src/index.js'
+
 const getResolvePromise = (_url, item, ms) => {
   return new Promise((resolve) => {
-    setTimeout(() => resolve({ ...item, responseCode: 'SUCCESS' }), ms)
+    setTimeout(() => resolve({...item, responseCode: 'SUCCESS'}), ms)
   })
 }
 
 const getRejectPromise = (_url, item, ms) => {
   return new Promise((_resolve, reject) => {
-    setTimeout(() => reject({ ...item, responseCode: 'FAILURE' }), ms)
+    setTimeout(() => reject({...item, responseCode: 'FAILURE'}), ms)
   })
 }
 
-const logOut = ({ url, allOptions, ms }) => {
+const logOut = ({url, allOptions, ms}) => {
   const logInfo = {
     url,
     'expected time cost': ms,
@@ -20,10 +21,10 @@ const logOut = ({ url, allOptions, ms }) => {
   }
   console.table(logInfo)
 }
-const logResponse = ({ error, data }) => {
+const logResponse = ([error, data]) => {
   const end = Date.now()
   const {
-    config: { key, _started },
+    config: {key, _started},
     responseCode,
     url,
     ms,
@@ -49,7 +50,7 @@ const customApi = (url, allOptions) => {
   })
   const _allOptions = {
     ...allOptions,
-    config: { ...allOptions.config, _started: started },
+    config: {...allOptions.config, _started: started},
     url,
     ms,
   }
@@ -58,24 +59,23 @@ const customApi = (url, allOptions) => {
 }
 
 const batchOne = [
-  { url: 'First.com', config: { key: crypto.randomUUID() } },
-  { url: 'Second.com', config: { key: crypto.randomUUID() } },
-  { url: 'Third.com', config: { key: crypto.randomUUID(), reject: true } },
-  { url: 'Forth.com', config: { key: crypto.randomUUID() } },
+  {url: 'First.com', config: {key: crypto.randomUUID()}},
+  {url: 'Second.com', config: {key: crypto.randomUUID()}},
+  {url: 'Third.com', config: {key: crypto.randomUUID(), reject: true}},
+  {url: 'Forth.com', config: {key: crypto.randomUUID()}},
 ]
 const batchTwo = [
-  { url: 'Fifth.com', config: { key: crypto.randomUUID(), reject: true } },
-  { url: 'Sixth.com', config: { key: crypto.randomUUID() } },
-  { url: 'Seventh.com', config: { key: crypto.randomUUID() } },
+  {url: 'Fifth.com', config: {key: crypto.randomUUID(), reject: true}},
+  {url: 'Sixth.com', config: {key: crypto.randomUUID()}},
+  {url: 'Seventh.com', config: {key: crypto.randomUUID()}},
 ]
 
 const addPromiseToStream = (stream) => (batchOne, batchTwo) => {
   batchOne.forEach((item) => {
     if (stream.isTerminated()) return
     stream.addToStream(item)
-    stream.on(item.config.key, ([error, data]) => {
-      logResponse({ error, data })
-      //   log(item.config, error, data)
+    stream.on(item.config.key, ({response, config}) => {
+      logResponse(response)
     })
   })
 
@@ -83,9 +83,8 @@ const addPromiseToStream = (stream) => (batchOne, batchTwo) => {
     batchTwo.forEach((item) => {
       if (stream.isTerminated()) return
       stream.addToStream(item)
-      stream.on(item.config.key, ([error, data]) => {
-        // log(item.config, error, data)
-        logResponse({ error, data })
+      stream.on(item.config.key, ({response, config}) => {
+        logResponse(response)
       })
     })
   }, 9000)
@@ -117,56 +116,6 @@ async function multipleBatchesAbortOnFirstError() {
   const TotalApiCount = batchOne.length + batchTwo.length
   return await stream.start(TotalApiCount)
 }
-
-// function multipleBatches() {
-//   const { promiseQueueGenerator, terminate, isTerminated, addToQueue, setApiFn } =
-//     CreatePromiseQueue()
-//   const respondQueue = promiseQueueGenerator()
-//   setApiFn(customApi)
-//   addPromiseToQueue(isTerminated, addToQueue)()
-//   const MAX_API_REQUEST = 7
-//   async function consumeValues(resolve) {
-//     let count = 0
-//     for await (const respond of respondQueue) {
-//       const [error, data] = respond
-//       logResponse({ error, data })
-//       count++
-//       if (count >= MAX_API_REQUEST) {
-//         terminate()
-//       }
-//     }
-//     console.log('#---------------- multipleBatches stream terminated!')
-//     resolve(true)
-//   }
-//   return new Promise((resolve) => {
-//     consumeValues(resolve)
-//   })
-// }
-// function multipleBatchesAbortOnFirstError() {
-//   const { promiseQueueGenerator, terminate, isTerminated, addToQueue, setApiFn } =
-//     CreatePromiseQueue()
-//   const respondQueue = promiseQueueGenerator()
-//   setApiFn(customApi)
-//   addPromiseToQueue(isTerminated, addToQueue)()
-//   const MAX_API_REQUEST = 7
-//   async function consumeValues(resolve) {
-//     let count = 0
-//     const start = Date.now()
-//     for await (const respond of respondQueue) {
-//       const [error, data] = respond
-//       logResponse({ error, data })
-//       count++
-//       if (count >= MAX_API_REQUEST) {
-//         terminate()
-//       }
-//     }
-//     console.log('#-------------- multipleBatchesTerminateOnFirstError stream terminated!')
-//     resolve(true)
-//   }
-//   return new Promise((resolve) => {
-//     consumeValues(resolve)
-//   })
-// }
 
 async function tests() {
   await multipleBatches()
