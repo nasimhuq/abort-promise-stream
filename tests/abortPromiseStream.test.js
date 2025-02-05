@@ -106,6 +106,7 @@ async function multipleBatches() {
 async function multipleBatchesAbortOnFirstError() {
   const stream = CreatePromiseStream()
   const defaultEvents = stream.getDefaultEvents()
+  console.log("testing console")
   stream.setApiFn(customApi)
   stream.terminateOnError()
   stream.on(defaultEvents.STREAM_END_EVENT, () => {
